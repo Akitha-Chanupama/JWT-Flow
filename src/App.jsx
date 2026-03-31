@@ -595,7 +595,7 @@ async function refreshAccessToken(refreshToken) {
         {/* ═══════════════════════════════════════════
             RECAP FLOW
            ═══════════════════════════════════════════ */}
-        <section className="recap-section">
+        <section id="recap-section" className="recap-section">
           <RecapFlow />
         </section>
 
@@ -610,7 +610,7 @@ async function refreshAccessToken(refreshToken) {
       {/* ═══════════════════════════════════════════
           FOOTER
          ═══════════════════════════════════════════ */}
-      <footer className="footer">
+      <footer id="footer" className="footer">
         <p>Built to explain <strong className="text-gradient">JWT Authentication</strong> visually.</p>
         <p className="footer__hint">Use ← → arrow keys to navigate · Esc to return to top</p>
       </footer>

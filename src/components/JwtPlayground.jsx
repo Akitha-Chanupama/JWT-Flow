@@ -75,6 +75,24 @@ export default function JwtPlayground() {
             <pre>{JSON.stringify({ sub: '1234567890', name, email, role }, null, 2)}</pre>
           </div>
         </div>
+        <div className="playground__nav">
+          <button
+            className="playground__nav-btn"
+            onClick={() => document.getElementById('recap-section')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            <span>← Recap</span>
+          </button>
+          <button
+            className="playground__nav-btn"
+            onClick={() => document.getElementById('footer')?.scrollIntoView({ behavior: 'smooth' })}
+          >
+            <span>Next: Footer</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
