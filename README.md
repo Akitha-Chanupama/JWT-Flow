@@ -1,19 +1,149 @@
-# React + Vite
+# JWT Flow — Interactive JWT Authentication Guide
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fully interactive, visually rich single-page application that teaches **JWT (JSON Web Token) authentication** through an 8-step animated walkthrough. Built with Vite 8 + React 19, zero external UI libraries, pure CSS animations.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Live Demo
 
-## React Compiler
+```
+npm install
+npm run dev
+```
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+Open [http://localhost:5173](http://localhost:5173)
 
-Note: This will impact Vite dev & build performances.
+---
 
-## Expanding the ESLint configuration
+## What It Covers
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# JWT-Flow
+The app walks through the complete JWT authentication lifecycle in 8 interactive steps:
+
+| Step | Topic |
+|------|-------|
+| 01 | User Enters Credentials — animated typing input + login button simulation |
+| 02 | Request Sent to Server — POST request with HTTPS info card |
+| 03 | Server Validates Credentials — server → database → verified flow diagram |
+| 04 | JWT Token Generated — interactive token breakdown (header, payload, signature) |
+| 05 | Token Sent Back to Client — server response with Bearer token |
+| 06 | Token Stored in Browser — tabbed localStorage / sessionStorage / HttpOnly Cookie comparison |
+| 07 | Making Authenticated Requests — Authorization header usage with valid/invalid branching |
+| 08 | Token Expiration & Security — lifecycle bar, refresh tokens, security best practices |
+
+---
+
+## Features
+
+### Interactive Elements
+- **Login Button Simulation** — click triggers spinner → checkmark → auto-scroll to Step 2
+- **JWT Playground** — two-tab panel:
+  - **Build tab** — edit name/email/role and watch the token update live; hover segments to highlight header/payload/signature; copy with one click
+  - **Decode tab** — paste any JWT to see decoded header, payload, signature + expiry status
+- **Storage Tabs** — switch between localStorage, sessionStorage, and HttpOnly Cookie examples
+- **Auth Result Branching** — visual 200 OK vs 401 Unauthorized outcomes
+- **Token Lifecycle Bar** — animated Created → Active → Expiring → Expired bar
+- **RecapFlow** — inline 8-node step explorer with active state, detail card, and Previous/Next navigation
+
+### Visual & UX
+- **Hero Section** — staggered entrance animations, floating JWT token preview (hover to glow), blinking cursor on title, pulsing live badge, radial vignette, parallax orbs
+- **Syntax Highlighting** — CodeBlock renders JSON/JS with color-coded keys, strings, numbers, booleans, comments, keywords — no external library
+- **Glow Cards** — cursor spotlight effect + 3D tilt toward the mouse on hover
+- **Glossary Tooltips** — hover on technical terms (Base64URL, HS256, HMAC, Bearer token, claims, HTTPS) for plain-English explanations
+- **Animated Step Numbers** — count up from 00 → target when the section scrolls into view
+- **Scroll Animations** — IntersectionObserver-driven stagger reveals on every section
+- **Progress Bar** — fixed top reading progress indicator
+- **Back to Top** — appears after scrolling, smooth return
+- **Keyboard Navigation** — Arrow keys move between steps; Escape returns to top
+- **Dark / Light Theme** — toggle with smooth transition, persists via CSS `data-theme`
+
+### Knowledge Sections
+- **Quiz** — 5-question multiple-choice quiz with per-question explanations and a score ring result screen
+- **JWT vs Session Auth Comparison** — 6-row side-by-side table (state management, storage, scalability, mobile, revocation, request size)
+
+---
+
+## Tech Stack
+
+| | |
+|---|---|
+| Framework | React 19.2 + Vite 8 |
+| Styling | Pure CSS custom properties (no Tailwind, no CSS-in-JS) |
+| Fonts | Inter (sans) + Fira Code (mono) via Google Fonts CDN |
+| Animations | CSS keyframes + vanilla JS IntersectionObserver |
+| Build | Vite 8, React Compiler (babel-plugin-react-compiler) |
+| Linting | ESLint 9 with react-hooks + react-refresh plugins |
+
+**No external UI or animation libraries.** Everything — syntax highlighting, tooltips, 3D tilt, token assembly, quiz, comparison table — is hand-built.
+
+---
+
+## Project Structure
+
+```
+src/
+├── App.jsx              # Root: all 8 steps, inline components (TypedInput, StorageTabs,
+│                        #   AuthResult, TokenLifecycle, LoginButton, Glossary)
+├── App.css              # All component styles (~2600 lines, organized by section)
+├── index.css            # CSS custom properties, dark/light theme, global resets
+└── components/
+    ├── Hero.jsx          # Hero section with parallax orbs, token preview, stagger entrance
+    ├── Navbar.jsx        # Fixed navbar with visited-step checkmarks and active tracking
+    ├── ProgressBar.jsx   # Scroll progress indicator
+    ├── ThemeToggle.jsx   # Dark/light theme toggle button
+    ├── StepSection.jsx   # Reusable step wrapper with IntersectionObserver + counter animation
+    ├── CodeBlock.jsx     # Mac-style code block with syntax highlighting and copy button
+    ├── FlowDiagram.jsx   # Animated client ↔ server packet diagram
+    ├── TokenBreakdown.jsx # JWT token assembly animation (encode header → payload → signature)
+    ├── RecapFlow.jsx     # Interactive 8-step recap explorer
+    ├── JwtPlayground.jsx # Build + Decode tabs for live JWT interaction
+    ├── Comparison.jsx    # JWT vs Session Auth comparison table
+    ├── Quiz.jsx          # 5-question interactive quiz with scoring
+    └── BackToTop.jsx     # Scroll-to-top floating button
+```
+
+---
+
+## Getting Started
+
+**Prerequisites:** Node.js 18+
+
+```bash
+# Install dependencies
+npm install
+
+# Start dev server (with HMR)
+npm run dev
+
+# Production build
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint
+npm run lint
+```
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `→` or `↓` | Scroll to next step |
+| `←` or `↑` | Scroll to previous step |
+| `Esc` | Return to top |
+
+---
+
+## CSS Theme Variables
+
+The entire color system is driven by CSS custom properties defined in `index.css`. Switching themes is as simple as toggling `data-theme="light"` on `<html>`.
+
+Key token colors used throughout for the JWT segments:
+
+```css
+--token-header:    #fb7185   /* red   — Header  */
+--token-payload:   #c084fc   /* purple — Payload */
+--token-signature: #38bdf8   /* blue  — Signature */
+```
