@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Children } from 'react';
 
-export default function StepSection({ id, number, title, description, children, className = '' }) {
+export default function StepSection({ id, number, title, description, children, className = '', isLast = false }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
 
@@ -11,7 +11,7 @@ export default function StepSection({ id, number, title, description, children, 
           setVisible(true);
         }
       },
-      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.1, rootMargin: '0px 0px -60px 0px' }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -23,7 +23,10 @@ export default function StepSection({ id, number, title, description, children, 
       ref={ref}
       className={`step ${visible ? 'step--visible' : ''} ${className}`}
     >
-      <div className="step__header">
+      {/* Vertical connector line */}
+      {!isLast && <div className="step__connector" />}
+
+      <div className="step__header" style={{ '--stagger': 0 }}>
         <div className="step__number">
           <span>{number}</span>
         </div>
@@ -33,7 +36,11 @@ export default function StepSection({ id, number, title, description, children, 
         </div>
       </div>
       <div className="step__content">
-        {children}
+        {Children.map(children, (child, i) => (
+          <div className="step__child" style={{ '--stagger': i + 1 }} key={i}>
+            {child}
+          </div>
+        ))}
       </div>
     </section>
   );

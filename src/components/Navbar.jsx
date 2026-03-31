@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ThemeToggle from './ThemeToggle';
 
 const steps = [
@@ -15,6 +15,8 @@ const steps = [
 export default function Navbar() {
   const [activeStep, setActiveStep] = useState('');
   const [scrolled, setScrolled] = useState(false);
+  const visitedRef = useRef(new Set());
+  const [visited, setVisited] = useState(new Set());
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +32,10 @@ export default function Navbar() {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             setActiveStep(entry.target.id);
+            if (!visitedRef.current.has(entry.target.id)) {
+              visitedRef.current.add(entry.target.id);
+              setVisited(new Set(visitedRef.current));
+            }
           }
         });
       },
@@ -48,6 +54,12 @@ export default function Navbar() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const getStepClass = (id) => {
+    if (activeStep === id) return ' navbar__step--active';
+    if (visited.has(id)) return ' navbar__step--visited';
+    return '';
+  };
+
   return (
     <nav className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
       <div className="navbar__inner">
@@ -63,11 +75,15 @@ export default function Navbar() {
           {steps.map(({ id, label }) => (
             <button
               key={id}
-              className={`navbar__step${activeStep === id ? ' navbar__step--active' : ''}`}
+              className={`navbar__step${getStepClass(id)}`}
               onClick={() => scrollTo(id)}
               aria-label={`Go to step ${label}`}
             >
-              {label}
+              {visited.has(id) && activeStep !== id ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              ) : label}
             </button>
           ))}
         </div>

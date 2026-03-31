@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const parts = [
   {
@@ -34,11 +34,39 @@ const parts = [
 
 export default function TokenBreakdown() {
   const [activePart, setActivePart] = useState(null);
+  const [assembled, setAssembled] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => setAssembled(true), 400);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="token-breakdown">
+    <div className="token-breakdown" ref={ref}>
+      {/* Token assembly animation */}
+      <div className={`token-breakdown__assembly ${assembled ? 'token-breakdown__assembly--done' : ''}`}>
+        {parts.map((part, i) => (
+          <div
+            key={part.name}
+            className="token-breakdown__part"
+            style={{ '--part-color': part.color, '--part-i': i }}
+          >
+            <span className="token-breakdown__part-label">{part.name}</span>
+          </div>
+        ))}
+      </div>
+
       {/* Token string visualization */}
-      <div className="token-breakdown__token">
+      <div className={`token-breakdown__token ${assembled ? 'token-breakdown__token--visible' : ''}`}>
         {parts.map((part, i) => (
           <span key={part.name}>
             <span

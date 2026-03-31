@@ -15,10 +15,16 @@ export default function FlowDiagram({ direction = 'right', label, animated = tru
         <span>Client</span>
       </div>
 
-      {/* Arrow with animated packet */}
+      {/* Arrow with multiple animated packets */}
       <div className="flow-diagram__arrow">
         <div className="flow-diagram__line" />
-        {animated && <div className={`flow-diagram__packet ${isRight ? 'flow-diagram__packet--right' : 'flow-diagram__packet--left'}`} />}
+        {animated && (
+          <>
+            <div className={`flow-diagram__packet ${isRight ? 'flow-diagram__packet--right' : 'flow-diagram__packet--left'}`} style={{ animationDelay: '0s' }} />
+            <div className={`flow-diagram__packet ${isRight ? 'flow-diagram__packet--right' : 'flow-diagram__packet--left'}`} style={{ animationDelay: '0.8s' }} />
+            <div className={`flow-diagram__packet ${isRight ? 'flow-diagram__packet--right' : 'flow-diagram__packet--left'}`} style={{ animationDelay: '1.6s' }} />
+          </>
+        )}
         <div className={`flow-diagram__arrowhead ${isRight ? 'flow-diagram__arrowhead--right' : 'flow-diagram__arrowhead--left'}`} />
         {label && <span className="flow-diagram__label">{label}</span>}
       </div>
