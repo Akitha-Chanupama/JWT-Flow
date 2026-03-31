@@ -1,4 +1,24 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+
+/* ── Lightweight syntax highlighter ── */
+function highlightCode(code, language) {
+  if (language === 'json') {
+    return code
+      .replace(/("(?:[^"\\]|\\.)*")\s*:/g, '<span class="syn-key">$1</span>:')
+      .replace(/:\s*("(?:[^"\\]|\\.)*")/g, ': <span class="syn-str">$1</span>')
+      .replace(/:\s*(\d+)/g, ': <span class="syn-num">$1</span>')
+      .replace(/:\s*(true|false|null)/g, ': <span class="syn-bool">$1</span>');
+  }
+  if (language === 'javascript' || language === 'js') {
+    return code
+      .replace(/(\/\/.*)/gm, '<span class="syn-comment">$1</span>')
+      .replace(/\b(const|let|var|function|async|await|return|if|else|new|import|export|from|class|this)\b/g, '<span class="syn-keyword">$1</span>')
+      .replace(/("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)/g, '<span class="syn-str">$1</span>')
+      .replace(/\b(\d+)\b/g, '<span class="syn-num">$1</span>')
+      .replace(/\b(true|false|null|undefined)\b/g, '<span class="syn-bool">$1</span>');
+  }
+  return code;
+}
 
 export default function CodeBlock({ title, code, language = 'json' }) {
   const [copied, setCopied] = useState(false);
@@ -9,6 +29,11 @@ export default function CodeBlock({ title, code, language = 'json' }) {
       setTimeout(() => setCopied(false), 2000);
     });
   }, [code]);
+
+  const highlighted = useMemo(() => highlightCode(
+    code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+    language
+  ), [code, language]);
 
   return (
     <div className="code-block">
@@ -33,7 +58,7 @@ export default function CodeBlock({ title, code, language = 'json' }) {
         </button>
       </div>
       <pre className="code-block__body">
-        <code className={`language-${language}`}>{code}</code>
+        <code className={`language-${language}`} dangerouslySetInnerHTML={{ __html: highlighted }} />
       </pre>
     </div>
   );

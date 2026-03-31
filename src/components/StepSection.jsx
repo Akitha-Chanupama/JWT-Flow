@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, Children } from 'react';
 export default function StepSection({ id, number, title, description, children, className = '', isLast = false }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
+  const [displayNum, setDisplayNum] = useState('00');
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -17,6 +18,22 @@ export default function StepSection({ id, number, title, description, children, 
     return () => observer.disconnect();
   }, []);
 
+  /* Animate from 00 → target number when visible */
+  useEffect(() => {
+    if (!visible) return;
+    const target = parseInt(number, 10);
+    if (isNaN(target) || target <= 0) { setDisplayNum(number); return; }
+    let frame = 0;
+    const totalFrames = 18;
+    const timer = setInterval(() => {
+      frame++;
+      const current = Math.round((frame / totalFrames) * target);
+      setDisplayNum(String(Math.min(current, target)).padStart(2, '0'));
+      if (frame >= totalFrames) clearInterval(timer);
+    }, 40);
+    return () => clearInterval(timer);
+  }, [visible, number]);
+
   return (
     <section
       id={id}
@@ -28,7 +45,7 @@ export default function StepSection({ id, number, title, description, children, 
 
       <div className="step__header" style={{ '--stagger': 0 }}>
         <div className="step__number">
-          <span>{number}</span>
+          <span>{displayNum}</span>
         </div>
         <div className="step__title-group">
           <h2 className="step__title">{title}</h2>

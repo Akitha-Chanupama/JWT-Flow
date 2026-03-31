@@ -10,6 +10,18 @@ import TokenBreakdown from './components/TokenBreakdown';
 import BackToTop from './components/BackToTop';
 import JwtPlayground from './components/JwtPlayground';
 import RecapFlow from './components/RecapFlow';
+import Quiz from './components/Quiz';
+import Comparison from './components/Comparison';
+
+/* ── Glossary tooltip component ── */
+function Glossary({ term, tip, children }) {
+  return (
+    <span className="glossary">
+      <span className="glossary__trigger">{children || term}</span>
+      <span className="glossary__tip">{tip}</span>
+    </span>
+  );
+}
 
 /* ── Helper: scroll to next step ── */
 function NextStepButton({ targetId, label = 'Next Step' }) {
@@ -65,6 +77,38 @@ function TypedInput({ text, type = 'text', label }) {
         {!done && <span className="mock-form__cursor" />}
       </div>
     </div>
+  );
+}
+
+/* ── Login button simulation ── */
+function LoginButton() {
+  const [phase, setPhase] = useState('idle'); // idle → loading → success
+
+  const handleClick = () => {
+    if (phase !== 'idle') return;
+    setPhase('loading');
+    setTimeout(() => {
+      setPhase('success');
+      setTimeout(() => {
+        document.getElementById('step-2')?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => setPhase('idle'), 1200);
+      }, 900);
+    }, 1400);
+  };
+
+  return (
+    <button className={`mock-form__btn mock-form__btn--${phase}`} type="button" onClick={handleClick}>
+      {phase === 'idle' && <>
+        <span className="mock-form__btn-text">Login</span>
+        <span className="mock-form__btn-icon">→</span>
+      </>}
+      {phase === 'loading' && <span className="mock-form__spinner" />}
+      {phase === 'success' && (
+        <svg className="mock-form__check" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      )}
+    </button>
   );
 }
 
@@ -230,20 +274,37 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  /* ── Card glow effect (mouse spotlight) ── */
+  /* ── Card glow effect (mouse spotlight) + 3D tilt ── */
   const handleMouseMove = useCallback((e) => {
-    const cards = document.querySelectorAll('.glow-card');
+    const cards = document.querySelectorAll('.glow-card, .info-card');
     cards.forEach(card => {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       card.style.setProperty('--glow-x', `${x}px`);
       card.style.setProperty('--glow-y', `${y}px`);
+
+      /* 3D tilt — only when hovering */
+      if (
+        x >= 0 && x <= rect.width &&
+        y >= 0 && y <= rect.height
+      ) {
+        const rotateY = ((x / rect.width) - 0.5) * 8;   // ±4 deg
+        const rotateX = ((y / rect.height) - 0.5) * -8;  // ±4 deg
+        card.style.transform = `perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
+      }
+    });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    const cards = document.querySelectorAll('.glow-card, .info-card');
+    cards.forEach(card => {
+      card.style.transform = '';
     });
   }, []);
 
   return (
-    <div onMouseMove={handleMouseMove}>
+    <div onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
       {/* Loading overlay */}
       <div className={`app-loader ${!loading ? 'app-loader--hidden' : ''}`}>
         <div className="app-loader__spinner" />
@@ -268,10 +329,7 @@ export default function App() {
             <p className="mock-form__subtitle">Sign in to your account</p>
             <TypedInput label="Email" text="user@example.com" type="text" />
             <TypedInput label="Password" text="mypassword" type="password" />
-            <button className="mock-form__btn" type="button">
-              <span className="mock-form__btn-text">Login</span>
-              <span className="mock-form__btn-icon">→</span>
-            </button>
+            <LoginButton />
           </div>
           <NextStepButton targetId="step-2" />
         </StepSection>
@@ -283,7 +341,7 @@ export default function App() {
           id="step-2"
           number="02"
           title="Request Sent to Server"
-          description="When you hit Login, the browser sends a POST request to the server with your credentials as JSON data."
+          description={<>When you hit Login, the browser sends a <Glossary term="POST" tip="An HTTP method used to send data to the server, as opposed to GET which only retrieves data.">POST request</Glossary> to the server with your credentials as JSON data.</>}
         >
           <FlowDiagram direction="right" label="POST /api/login" animated />
           <CodeBlock
@@ -301,7 +359,7 @@ export default function App() {
                 <line x1="12" y1="8" x2="12.01" y2="8"/>
               </svg>
             </div>
-            <h4 className="info-card__title">Always use HTTPS</h4>
+            <h4 className="info-card__title">Always use <Glossary term="HTTPS" tip="HTTP Secure — encrypts all traffic between client and server using TLS, preventing eavesdropping.">HTTPS</Glossary></h4>
             <p className="info-card__text">
               Credentials must be sent over an encrypted connection (HTTPS). Never send passwords over plain HTTP — they could be intercepted.
             </p>
@@ -387,7 +445,7 @@ if (!valid) {
           id="step-4"
           number="04"
           title="JWT Token is Generated"
-          description="The server creates a JSON Web Token with three parts: Header, Payload, and Signature. Each part is Base64URL encoded and joined with dots."
+          description={<>The server creates a JSON Web Token with three parts: Header, Payload, and Signature. Each part is <Glossary term="Base64URL" tip="A URL-safe variant of Base64 encoding that replaces + with - and / with _, and omits padding = characters.">Base64URL encoded</Glossary> and joined with dots.</>}
         >
           <TokenBreakdown />
           <div className="cards-grid">
@@ -398,7 +456,7 @@ if (!valid) {
                 </svg>
               </div>
               <h4 className="info-card__title">Header</h4>
-              <p className="info-card__text">Specifies the token type (JWT) and the signing algorithm (e.g., HS256).</p>
+              <p className="info-card__text">Specifies the token type (JWT) and the signing algorithm (e.g., <Glossary term="HS256" tip="HMAC-SHA256 — a symmetric signing algorithm that uses a shared secret key to create and verify signatures.">HS256</Glossary>).</p>
             </div>
             <div className="info-card glow-card">
               <div className="info-card__icon" style={{ color: 'var(--token-payload)', background: 'rgba(192,132,252,0.12)' }}>
@@ -407,7 +465,7 @@ if (!valid) {
                 </svg>
               </div>
               <h4 className="info-card__title">Payload</h4>
-              <p className="info-card__text">Contains the claims — user data like ID, email, and token expiration time.</p>
+              <p className="info-card__text">Contains the <Glossary term="claims" tip="Key-value pairs in the payload — registered claims (like exp, iss) and custom claims (like role, email).">claims</Glossary> — user data like ID, email, and token expiration time.</p>
             </div>
             <div className="info-card glow-card">
               <div className="info-card__icon" style={{ color: 'var(--token-signature)', background: 'rgba(56,189,248,0.12)' }}>
@@ -416,7 +474,7 @@ if (!valid) {
                 </svg>
               </div>
               <h4 className="info-card__title">Signature</h4>
-              <p className="info-card__text">Ensures the token hasn't been tampered with. Created using the header, payload, and a secret key.</p>
+              <p className="info-card__text">Ensures the token hasn't been tampered with. Created using the header, payload, and a <Glossary term="secret key" tip="A private string known only to the server, used to sign and verify tokens. If leaked, all tokens can be forged.">secret key</Glossary>.</p>
             </div>
           </div>
           <NextStepButton targetId="step-5" />
@@ -488,7 +546,7 @@ if (!valid) {
           id="step-7"
           number="07"
           title="Making Authenticated Requests"
-          description="For every subsequent API request, the client includes the JWT token in the Authorization header. The server verifies the token before processing the request."
+          description={<>For every subsequent API request, the client includes the JWT in the <Glossary term="Authorization header" tip="An HTTP header where the client sends credentials. The Bearer scheme indicates a token-based auth: Authorization: Bearer &lt;token&gt;">Authorization header</Glossary>. The server verifies the token before processing the request.</>}
         >
           <FlowDiagram direction="right" label="GET /api/profile" animated />
 
@@ -604,6 +662,24 @@ async function refreshAccessToken(refreshToken) {
            ═══════════════════════════════════════════ */}
         <section className="playground-section">
           <JwtPlayground />
+        </section>
+
+        {/* ═══════════════════════════════════════════
+            JWT vs SESSION COMPARISON
+           ═══════════════════════════════════════════ */}
+        <section className="comparison-section">
+          <Comparison />
+        </section>
+
+        {/* ═══════════════════════════════════════════
+            QUIZ
+           ═══════════════════════════════════════════ */}
+        <section className="quiz-section">
+          <h2 className="quiz-section__heading">
+            Test Your <span className="text-gradient">Knowledge</span>
+          </h2>
+          <p className="quiz-section__sub">5 questions to see how well you understood the JWT flow</p>
+          <Quiz />
         </section>
       </main>
 
