@@ -64,6 +64,13 @@ export default function Hero() {
           </span>
         </h1>
 
+        {/* Decorative separator */}
+        <div className="hero__divider">
+          <span className="hero__divider-line" />
+          <span className="hero__divider-dot" />
+          <span className="hero__divider-line" />
+        </div>
+
         {/* Subtitle */}
         <p className="hero__subtitle">
           A visual, step-by-step guide to understanding <strong>JWT Authentication</strong> - from clicking the button to secured API calls.
