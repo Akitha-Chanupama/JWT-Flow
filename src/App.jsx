@@ -12,6 +12,8 @@ import JwtPlayground from './components/JwtPlayground';
 import RecapFlow from './components/RecapFlow';
 import Quiz from './components/Quiz';
 import Comparison from './components/Comparison';
+import AttacksSection from './components/AttacksSection';
+import CommandPalette from './components/CommandPalette';
 
 /* ── Glossary tooltip component ── */
 function Glossary({ term, tip, children }) {
@@ -313,6 +315,7 @@ export default function App() {
       <ProgressBar />
       <Navbar />
       <Hero />
+      <CommandPalette />
 
       <main>
         {/* ═══════════════════════════════════════════
@@ -651,8 +654,29 @@ async function refreshAccessToken(refreshToken) {
         </div>
 
         {/* ═══════════════════════════════════════════
-            RECAP FLOW
+            SECURITY ATTACKS
            ═══════════════════════════════════════════ */}
+        <section id="attacks-section" className="attacks-section">
+          <div className="attacks-section__inner">
+            <div className="attacks-section__head">
+              <div className="attacks-section__badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Security
+              </div>
+              <h2 className="attacks-section__title">
+                Common JWT <span className="text-gradient">Vulnerabilities</span>
+              </h2>
+              <p className="attacks-section__sub">
+                Understanding these attacks makes you a better developer. Click each to explore the exploit and prevention.
+              </p>
+            </div>
+            <AttacksSection />
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════
+            RECAP FLOW
+           ═══════════════════════════════════════════ */}}
         <section id="recap-section" className="recap-section">
           <RecapFlow />
         </section>
@@ -678,7 +702,7 @@ async function refreshAccessToken(refreshToken) {
           <h2 className="quiz-section__heading">
             Test Your <span className="text-gradient">Knowledge</span>
           </h2>
-          <p className="quiz-section__sub">5 questions to see how well you understood the JWT flow</p>
+          <p className="quiz-section__sub">10 questions to test how well you understood JWT authentication</p>
           <Quiz />
         </section>
       </main>
@@ -688,7 +712,7 @@ async function refreshAccessToken(refreshToken) {
          ═══════════════════════════════════════════ */}
       <footer id="footer" className="footer">
         <p>Built to explain <strong className="text-gradient">JWT Authentication</strong> visually.</p>
-        <p className="footer__hint">Use ← → arrow keys to navigate · Esc to return to top</p>
+        <p className="footer__hint">Use ← → arrow keys to navigate · Ctrl+K to search · Esc to return to top</p>
       </footer>
 
       <BackToTop />

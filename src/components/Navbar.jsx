@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import ThemeToggle from './ThemeToggle';
+import AmbientSound from './AmbientSound';
 
 const steps = [
   { id: 'step-1', label: '1' },
@@ -88,7 +89,21 @@ export default function Navbar() {
           ))}
         </div>
 
-        <ThemeToggle />
+        <div className="navbar__controls">
+          <button
+            className="navbar__search-btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('openCmd'))}
+            title="Jump to section (Ctrl+K)"
+            aria-label="Open search palette"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <span className="navbar__search-hint">Ctrl K</span>
+          </button>
+          <AmbientSound />
+          <ThemeToggle />
+        </div>
       </div>
     </nav>
   );

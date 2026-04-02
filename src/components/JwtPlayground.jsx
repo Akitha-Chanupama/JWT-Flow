@@ -1,17 +1,36 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-function fakeBase64(str) {
-  try {
-    return btoa(str).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  } catch {
-    return btoa(encodeURIComponent(str)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  }
+/* ── Real Base64URL encoding ── */
+function toB64URL(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+/* ── Build a real HMAC-SHA256 JWT via Web Crypto API ── */
+async function buildRealJWT(payloadObj, secret) {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const headerB64 = toB64URL(JSON.stringify(header));
+  const payloadB64 = toB64URL(JSON.stringify(payloadObj));
+  const sigInput = `${headerB64}.${payloadB64}`;
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const sigBuf = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(sigInput));
+  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sigBuf)))
+    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+
+  return { headerB64, payloadB64, sigB64, full: `${sigInput}.${sigB64}` };
 }
 
 function safeDecode(b64) {
   try {
     const padded = b64.replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(padded));
+    return JSON.parse(decodeURIComponent(escape(atob(padded))));
   } catch {
     return null;
   }
@@ -25,23 +44,25 @@ export default function JwtPlayground() {
   const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('john@example.com');
   const [role, setRole] = useState('admin');
+  const [secret, setSecret] = useState('your-256-bit-secret');
   const [activeSection, setActiveSection] = useState(null);
+  const [token, setToken] = useState({ headerB64: '', payloadB64: '', sigB64: '', full: '…building' });
 
-  const token = useMemo(() => {
-    const header = JSON.stringify({ alg: 'HS256', typ: 'JWT' });
-    const payload = JSON.stringify({
+  useEffect(() => {
+    let cancelled = false;
+    const payload = {
       sub: '1234567890',
       name,
       email,
       role,
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 3600,
+    };
+    buildRealJWT(payload, secret || 'secret').then(t => {
+      if (!cancelled) setToken(t);
     });
-    const headerB64 = fakeBase64(header);
-    const payloadB64 = fakeBase64(payload);
-    const sigB64 = fakeBase64(`HMACSHA256(${headerB64}.${payloadB64},secret)`).slice(0, 43);
-    return { headerB64, payloadB64, sigB64, full: `${headerB64}.${payloadB64}.${sigB64}` };
-  }, [name, email, role]);
+    return () => { cancelled = true; };
+  }, [name, email, role, secret]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(token.full).then(() => {
@@ -52,14 +73,14 @@ export default function JwtPlayground() {
 
   /* ── Decode tab state ── */
   const [pastedToken, setPastedToken] = useState('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c');
-  const decoded = useMemo(() => {
+  const decoded = (() => {
     const parts = pastedToken.split('.');
     if (parts.length !== 3) return null;
     const header = safeDecode(parts[0]);
     const payload = safeDecode(parts[1]);
     if (!header || !payload) return null;
     return { header, payload, sig: parts[2] };
-  }, [pastedToken]);
+  })();
 
   return (
     <div className="playground">
@@ -76,9 +97,14 @@ export default function JwtPlayground() {
       </div>
 
       {tab === 'build' ? (
-        /* ════════ BUILD TAB — Minimal ════════ */
         <div className="build">
-          {/* ── Compact inline inputs ── */}
+          {/* ── Real crypto badge ── */}
+          <div className="build__real-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Cryptographically valid · verifiable at jwt.io
+          </div>
+
+          {/* ── Inputs ── */}
           <div className="build__fields">
             <div className="build__field">
               <label>name</label>
@@ -96,20 +122,35 @@ export default function JwtPlayground() {
                 <option value="editor">editor</option>
               </select>
             </div>
+            <div className="build__field build__field--secret">
+              <label>secret key</label>
+              <input value={secret} onChange={e => setSecret(e.target.value)} placeholder="your-256-bit-secret" />
+            </div>
           </div>
 
-          {/* ── Hero token output ── */}
+          {/* ── Token output ── */}
           <div className="build__token-wrap">
             <div className="build__token-bar">
               <span className="build__token-label">Generated JWT</span>
-              <button className="build__copy-btn" onClick={handleCopy} title="Copy token">
-                {copied ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                )}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
-              </button>
+              <div className="build__token-actions">
+                <a
+                  className="build__verify-link"
+                  href={`https://jwt.io/#debugger-io?token=${token.full}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Verify at jwt.io"
+                >
+                  Verify at jwt.io ↗
+                </a>
+                <button className="build__copy-btn" onClick={handleCopy} title="Copy token">
+                  {copied ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  )}
+                  <span>{copied ? 'Copied' : 'Copy'}</span>
+                </button>
+              </div>
             </div>
             <div className="build__token">
               <span
@@ -176,7 +217,7 @@ export default function JwtPlayground() {
                 <span className="build__card-algo">HMAC-SHA256</span>
               </div>
               {activeSection === 'sig' && (
-                <pre className="build__card-pre">HMACSHA256(header + "." + payload, secret)</pre>
+                <pre className="build__card-pre">HMACSHA256(header + "." + payload, "{secret || 'secret'}")</pre>
               )}
             </button>
           </div>
@@ -236,3 +277,4 @@ export default function JwtPlayground() {
     </div>
   );
 }
+
