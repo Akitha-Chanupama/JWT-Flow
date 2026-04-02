@@ -676,7 +676,7 @@ async function refreshAccessToken(refreshToken) {
 
         {/* ═══════════════════════════════════════════
             RECAP FLOW
-           ═══════════════════════════════════════════ */}}
+           ═══════════════════════════════════════════ */}
         <section id="recap-section" className="recap-section">
           <RecapFlow />
         </section>
