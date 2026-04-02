@@ -712,6 +712,10 @@ async function refreshAccessToken(refreshToken) {
          ═══════════════════════════════════════════ */}
       <footer id="footer" className="footer">
         <p>Built to explain <strong className="text-gradient">JWT Authentication</strong> visually.</p>
+        <div className="footer__credit">
+          
+          Built by <strong>Akitha Chanupama. </strong>A Full Stack Developer
+        </div>
         <p className="footer__hint">Use ← → arrow keys to navigate · Ctrl+K to search · Esc to return to top</p>
       </footer>
 

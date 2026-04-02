@@ -2535,17 +2535,21 @@
 
 .build__fields {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .build__field {
-  flex: 1;
+  flex: 1 1 140px;
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 .build__field--sm {
   flex: 0 0 110px;
+}
+.build__field--secret {
+  flex: 1 1 100%;
 }
 
 .build__field label {
@@ -2560,7 +2564,7 @@
 .build__field select {
   width: 100%;
   padding: 9px 12px;
-  background: var(--bg);
+  background: var(--bg-input);
   border: 1.5px solid var(--border);
   border-radius: 10px;
   color: var(--text-primary);
@@ -2900,10 +2904,28 @@
 }
 
 /* ============ FOOTER HINT ============ */
+.footer__credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 10px 0 4px;
+}
+.footer__credit svg {
+  color: #f43f5e;
+  fill: #f43f5e;
+  flex-shrink: 0;
+}
+.footer__credit strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
 .footer__hint {
   font-size: 12px;
   color: var(--text-muted);
-  margin-top: 10px;
+  margin-top: 6px;
   opacity: 0.7;
 }
 
